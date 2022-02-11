@@ -18,6 +18,7 @@
 
 package org.apache.zookeeper.test;
 
+import static org.apache.zookeeper.AddWatchMode.PERSISTENT;
 import static org.apache.zookeeper.AddWatchMode.PERSISTENT_RECURSIVE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -147,6 +148,47 @@ public class PersistentRecursiveWatcherTest extends ClientBase {
             assertEvent(events, Watcher.Event.EventType.NodeDataChanged, "/a/b/c");
             assertEvent(events, Watcher.Event.EventType.NodeDataChanged, "/a/b/c");
             assertEvent(events, Watcher.Event.EventType.NodeDataChanged, "/a/b/c");
+        }
+    }
+
+    @Test
+    public void testPathOverlapWithStandardWatcher() throws Exception {
+        try (ZooKeeper zk = createClient(new CountdownWatcher(), hostPort)) {
+            CountDownLatch nodeCreated = new CountDownLatch(1);
+            zk.addWatch("/a", persistentWatcher, PERSISTENT_RECURSIVE);
+            zk.exists("/a", event -> nodeCreated.countDown());
+
+            zk.create("/a", new byte[0], ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+            zk.create("/a/b", new byte[0], ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+            zk.delete("/a/b", -1);
+            zk.delete("/a", -1);
+
+            assertEvent(events, Watcher.Event.EventType.NodeCreated, "/a");
+            assertEvent(events, Watcher.Event.EventType.NodeCreated, "/a/b");
+            assertEvent(events, Watcher.Event.EventType.NodeDeleted, "/a/b");
+            assertEvent(events, Watcher.Event.EventType.NodeDeleted, "/a");
+
+            assertTrue(nodeCreated.await(5, TimeUnit.SECONDS));
+        }
+    }
+
+    @Test
+    public void testPathOverlapWithPersistentWatcher() throws Exception {
+        try (ZooKeeper zk = createClient(new CountdownWatcher(), hostPort)) {
+            zk.addWatch("/a", persistentWatcher, PERSISTENT_RECURSIVE);
+            zk.addWatch("/a/b", event -> {}, PERSISTENT);
+            zk.create("/a", new byte[0], ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+            zk.create("/a/b", new byte[0], ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+            zk.create("/a/b/c", new byte[0], ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+            zk.delete("/a/b/c", -1);
+            zk.delete("/a/b", -1);
+            zk.delete("/a", -1);
+            assertEvent(events, Watcher.Event.EventType.NodeCreated, "/a");
+            assertEvent(events, Watcher.Event.EventType.NodeCreated, "/a/b");
+            assertEvent(events, Watcher.Event.EventType.NodeCreated, "/a/b/c");
+            assertEvent(events, Watcher.Event.EventType.NodeDeleted, "/a/b/c");
+            assertEvent(events, Watcher.Event.EventType.NodeDeleted, "/a/b");
+            assertEvent(events, Watcher.Event.EventType.NodeDeleted, "/a");
         }
     }
 
