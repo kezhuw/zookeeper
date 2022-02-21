@@ -34,7 +34,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.apache.commons.collections4.CollectionUtils;
@@ -895,11 +898,36 @@ public class RemoveWatchesTest extends ClientBase {
         LOG.info("Adding child watcher {} on path {}", w2, "/node1");
         assertEquals(0, zk2.getChildren("/node1", w2).size(), "Didn't set child watches");
 
+        BlockingDeque<WatchedEvent> persistentEvents = new LinkedBlockingDeque<>();
+        zk2.addWatch("/node1", persistentEvents::add, AddWatchMode.PERSISTENT);
+
         assertTrue(isServerSessionWatcher(zk2.getSessionId(), "/node1", WatcherType.Children), "Server session is not a watcher");
         removeAllWatches(zk2, "/node1", WatcherType.Children, false, Code.OK, useAsync);
         assertTrue(rmWatchCount.await(CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS), "Didn't remove child watcher");
 
         assertFalse(isServerSessionWatcher(zk2.getSessionId(), "/node1", WatcherType.Children), "Server session is still a watcher after removal");
+
+        zk1.create("/node1/child", null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+        zk1.delete("/node1/child", -1);
+        zk1.setData("/node1", new byte[0], -1);
+        zk1.delete("/node1", -1);
+
+        // Comment out following two statements pass this test.
+        //
+        // Basically, we construct a persistent data watcher which we never claim to support.
+        assertEvent(persistentEvents, EventType.NodeChildrenChanged, "/node1");
+        assertEvent(persistentEvents, EventType.NodeChildrenChanged, "/node1");
+
+        assertEvent(persistentEvents, EventType.NodeDataChanged, "/node1");
+        assertEvent(persistentEvents, EventType.NodeDeleted, "/node1");
+    }
+
+    private void assertEvent(BlockingQueue<WatchedEvent> events, Watcher.Event.EventType eventType, String path)
+            throws InterruptedException {
+        WatchedEvent event = events.poll(5, TimeUnit.SECONDS);
+        assertNotNull(event);
+        assertEquals(eventType, event.getType());
+        assertEquals(path, event.getPath());
     }
 
     /**
