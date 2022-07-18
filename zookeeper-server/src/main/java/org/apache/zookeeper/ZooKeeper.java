@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import org.apache.jute.Record;
 import org.apache.yetus.audience.InterfaceAudience;
@@ -2093,6 +2094,13 @@ public class ZooKeeper implements AutoCloseable {
         getData(path, getDefaultWatcher(watch), cb, ctx);
     }
 
+    private Watcher interceptZooKeeperSubTreeWatcher(String path, Watcher watcher) {
+        if (Objects.equals(cnxn.chrootPath, "/zookeeper")) {
+            return new PathWatcher(path, watcher);
+        }
+        return watcher;
+    }
+
     /**
      * Return the last committed configuration (as known to the server to which the client is connected)
      * and the stat of the configuration.
@@ -2116,6 +2124,7 @@ public class ZooKeeper implements AutoCloseable {
         // the watch contains the un-chroot path
         WatchRegistration wcb = null;
         if (watcher != null) {
+            watcher = interceptZooKeeperSubTreeWatcher(configZnode, watcher);
             wcb = new DataWatchRegistration(watcher, configZnode);
         }
 
@@ -2146,6 +2155,7 @@ public class ZooKeeper implements AutoCloseable {
         // the watch contains the un-chroot path
         WatchRegistration wcb = null;
         if (watcher != null) {
+            watcher = interceptZooKeeperSubTreeWatcher(configZnode, watcher);
             wcb = new DataWatchRegistration(watcher, configZnode);
         }
 
