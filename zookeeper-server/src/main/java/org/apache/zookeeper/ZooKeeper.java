@@ -2037,6 +2037,8 @@ public class ZooKeeper implements AutoCloseable {
         getData(path, getDefaultWatcher(watch), cb, ctx);
     }
 
+    public static boolean WATCH_ZOOKEEPER_CONFIG_USING_CLIENT_PATH = false;
+
     /**
      * Return the last committed configuration (as known to the server to which the client is connected)
      * and the stat of the configuration.
@@ -2061,6 +2063,14 @@ public class ZooKeeper implements AutoCloseable {
         WatchRegistration wcb = null;
         if (watcher != null) {
             wcb = new DataWatchRegistration(watcher, configZnode);
+            String chroot = cnxn.chrootPath;
+            if (WATCH_ZOOKEEPER_CONFIG_USING_CLIENT_PATH
+                && chroot != null
+                && configZnode.startsWith(chroot)
+                && (configZnode.length() == chroot.length() || configZnode.charAt(chroot.length()) == '/')) {
+                String clientPath = configZnode.equals(chroot) ? "/" : configZnode.substring(chroot.length());
+                wcb = new DataWatchRegistration(watcher, clientPath);
+            }
         }
 
         RequestHeader h = new RequestHeader();
@@ -2091,6 +2101,14 @@ public class ZooKeeper implements AutoCloseable {
         WatchRegistration wcb = null;
         if (watcher != null) {
             wcb = new DataWatchRegistration(watcher, configZnode);
+            String chroot = cnxn.chrootPath;
+            if (WATCH_ZOOKEEPER_CONFIG_USING_CLIENT_PATH
+                && chroot != null
+                && configZnode.startsWith(chroot)
+                && (configZnode.length() == chroot.length() || configZnode.charAt(chroot.length()) == '/')) {
+                String clientPath = configZnode.equals(chroot) ? "/" : configZnode.substring(chroot.length());
+                wcb = new DataWatchRegistration(watcher, clientPath);
+            }
         }
 
         RequestHeader h = new RequestHeader();
