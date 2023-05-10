@@ -842,6 +842,12 @@ public class Learner {
             dos.writeLong(entry.getKey());
             dos.writeInt(entry.getValue());
         }
+        // Piggyback whatever leader/master sent
+        byte[] data = qp.getData();
+        if (data != null && data.length != 0) {
+            dos.write(data);
+        }
+
 
         QuorumPacket pingReply = new QuorumPacket(qp.getType(), qp.getZxid(), bos.toByteArray(), qp.getAuthinfo());
         writePacket(pingReply, true);

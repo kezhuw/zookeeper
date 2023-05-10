@@ -40,7 +40,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import javax.security.sasl.SaslException;
 import org.apache.jute.BinaryInputArchive;
 import org.apache.jute.BinaryOutputArchive;
-import org.apache.zookeeper.ZooDefs.OpCode;
 import org.apache.zookeeper.common.Time;
 import org.apache.zookeeper.server.Request;
 import org.apache.zookeeper.server.RequestRecord;
@@ -687,6 +686,13 @@ public class LearnerHandler extends ZooKeeperThread {
                     DataInputStream dis = new DataInputStream(bis);
                     while (dis.available() > 0) {
                         long sess = dis.readLong();
+                        if (sess == Leader.PING_SESSION_END) {
+                            int n = dis.available();
+                            byte[] payload = new byte[n];
+                            dis.read(payload);
+                            learnerMaster.processPing(this.sid, qp.getZxid(), payload);
+                            break;
+                        }
                         int to = dis.readInt();
                         learnerMaster.touch(sess, to);
                     }
@@ -701,12 +707,7 @@ public class LearnerHandler extends ZooKeeperThread {
                     cxid = bb.getInt();
                     type = bb.getInt();
                     bb = bb.slice();
-                    Request si;
-                    if (type == OpCode.sync) {
-                        si = new LearnerSyncRequest(this, sessionId, cxid, type, RequestRecord.fromBytes(bb), qp.getAuthinfo());
-                    } else {
-                        si = new Request(null, sessionId, cxid, type, RequestRecord.fromBytes(bb), qp.getAuthinfo());
-                    }
+                    Request si = new Request(null, sessionId, cxid, type, RequestRecord.fromBytes(bb), qp.getAuthinfo());
                     si.setOwner(this);
                     learnerMaster.submitLearnerRequest(si);
                     requestsReceived.incrementAndGet();
