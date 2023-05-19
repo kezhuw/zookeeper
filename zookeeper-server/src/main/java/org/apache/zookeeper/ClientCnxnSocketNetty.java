@@ -126,6 +126,10 @@ public class ClientCnxnSocketNetty extends ClientCnxnSocket {
 
     @Override
     void connect(InetSocketAddress addr) throws IOException {
+        connect(addr, -1);
+    }
+
+    void connect(InetSocketAddress addr, int timeout) throws IOException {
         firstConnect = new CountDownLatch(1);
 
         Bootstrap bootstrap = new Bootstrap().group(eventLoopGroup)
@@ -133,6 +137,9 @@ public class ClientCnxnSocketNetty extends ClientCnxnSocket {
                                              .option(ChannelOption.SO_LINGER, -1)
                                              .option(ChannelOption.TCP_NODELAY, true)
                                              .handler(new ZKClientPipelineFactory(addr.getHostString(), addr.getPort()));
+        if (timeout > 0) {
+            bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeout);
+        }
         bootstrap = configureBootstrapAllocator(bootstrap);
         bootstrap.validate();
 
@@ -196,6 +203,9 @@ public class ClientCnxnSocketNetty extends ClientCnxnSocket {
         }
     }
 
+    void beforeChannelClose() {
+    }
+
     @Override
     void cleanup() {
         connectLock.lock();
@@ -205,6 +215,7 @@ public class ClientCnxnSocketNetty extends ClientCnxnSocket {
                 connectFuture = null;
             }
             if (channel != null) {
+                beforeChannelClose();
                 channel.close().syncUninterruptibly();
                 channel = null;
             }
