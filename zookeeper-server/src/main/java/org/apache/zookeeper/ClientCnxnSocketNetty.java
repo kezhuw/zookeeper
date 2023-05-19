@@ -124,6 +124,10 @@ public class ClientCnxnSocketNetty extends ClientCnxnSocket {
 
     @Override
     void connect(InetSocketAddress addr) throws IOException {
+        connect(addr, -1);
+    }
+
+    void connect(InetSocketAddress addr, int timeout) throws IOException {
         firstConnect = new CountDownLatch(1);
 
         Bootstrap bootstrap = new Bootstrap().group(eventLoopGroup)
@@ -131,6 +135,9 @@ public class ClientCnxnSocketNetty extends ClientCnxnSocket {
                                              .option(ChannelOption.SO_LINGER, -1)
                                              .option(ChannelOption.TCP_NODELAY, true)
                                              .handler(new ZKClientPipelineFactory(addr.getHostString(), addr.getPort()));
+        if (timeout > 0) {
+            bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeout);
+        }
         bootstrap = configureBootstrapAllocator(bootstrap);
         bootstrap.validate();
 
@@ -143,16 +150,21 @@ public class ClientCnxnSocketNetty extends ClientCnxnSocket {
                     // this lock guarantees that channel won't be assigned after cleanup().
                     boolean connected = false;
                     connectLock.lock();
+                    if (channelFuture != connectFuture) {
+                        connectLock.unlock();
+                        LOG.info("connect attempt cancelled");
+                        // If the connect attempt was cancelled but succeeded
+                        // anyway, make sure to close the channel, otherwise
+                        // we may leak a file descriptor.
+                        channelFuture.channel().close();
+
+                        // The connect attempt got cancelled, the cancellation should do all clean up
+                        // already.
+                        return;
+                    }
                     try {
                         if (!channelFuture.isSuccess()) {
                             LOG.warn("future isn't success.", channelFuture.cause());
-                            return;
-                        } else if (connectFuture == null) {
-                            LOG.info("connect attempt cancelled");
-                            // If the connect attempt was cancelled but succeeded
-                            // anyway, make sure to close the channel, otherwise
-                            // we may leak a file descriptor.
-                            channelFuture.channel().close();
                             return;
                         }
                         // setup channel, variables, connection, etc.
@@ -194,6 +206,9 @@ public class ClientCnxnSocketNetty extends ClientCnxnSocket {
         }
     }
 
+    void beforeChannelClose() {
+    }
+
     @Override
     void cleanup() {
         connectLock.lock();
@@ -203,7 +218,8 @@ public class ClientCnxnSocketNetty extends ClientCnxnSocket {
                 connectFuture = null;
             }
             if (channel != null) {
-                channel.close().syncUninterruptibly();
+                beforeChannelClose();
+                channel.close();
                 channel = null;
             }
         } finally {
