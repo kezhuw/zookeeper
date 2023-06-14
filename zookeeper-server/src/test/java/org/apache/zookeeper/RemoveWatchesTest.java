@@ -46,6 +46,7 @@ import org.apache.zookeeper.server.ServerCnxn;
 import org.apache.zookeeper.test.ClientBase;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -733,6 +734,36 @@ public class RemoveWatchesTest extends ClientBase {
             fail("Must throw IllegalArgumentException as watcher is null!");
         } catch (IllegalArgumentException iae) {
             // expected
+        }
+    }
+
+    @Test
+    public void testRemovePersistentWatchesOnAPathPartially() throws Exception {
+        zk1.create("/node1", null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+
+        Watcher persistentWatcher = event -> {};
+        zk1.addWatch("/node1", persistentWatcher, AddWatchMode.PERSISTENT);
+
+        try {
+            removeWatches(zk1, "/node1", persistentWatcher, WatcherType.Data, false, Code.OK, false);
+            fail("expect no watcher");
+        } catch (KeeperException ex) {
+            assertEquals(ex.code(), Code.NOWATCHER);
+        }
+    }
+
+    @Test
+    public void testRemoveAllPersistentWatchesOnAPathPartially() throws Exception {
+        zk1.create("/node1", null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+
+        Watcher persistentWatcher = event -> {};
+        zk1.addWatch("/node1", persistentWatcher, AddWatchMode.PERSISTENT);
+
+        try {
+            removeAllWatches(zk1, "/node1", WatcherType.Data, false, Code.OK, false);
+            fail("expect no watcher");
+        } catch (KeeperException ex) {
+            assertEquals(ex.code(), Code.NOWATCHER);
         }
     }
 
