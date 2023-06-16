@@ -22,12 +22,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 import java.io.IOException;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
+import org.apache.zookeeper.server.DataNode;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,6 +53,42 @@ public class CreateTest extends ClientBase {
     public void tearDown() throws Exception {
         super.tearDown();
         zk.close();
+    }
+
+    @Test
+    public void testCreateSequentialCversionOverflow() throws Exception {
+        Stat stat = new Stat();
+        zk.create("/parent", null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT, stat);
+        String prefix = "/parent/child-";
+
+        String path = zk.create(prefix, null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
+        assertEquals(0, Integer.parseInt(path.substring(prefix.length())));
+
+        DataNode parentNode = serverFactory.getZooKeeperServer().getZKDatabase().getNode("/parent");
+        parentNode.stat.setCversion(Integer.MAX_VALUE - 1);
+
+        path = zk.create(prefix, null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
+        assertEquals(Integer.MAX_VALUE - 1, Integer.parseInt(path.substring(prefix.length())));
+
+        path = zk.create(prefix, null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
+        assertEquals(Integer.MAX_VALUE, Integer.parseInt(path.substring(prefix.length())));
+
+        parentNode = serverFactory.getZooKeeperServer().getZKDatabase().getNode("/parent");
+        assertEquals(Integer.MAX_VALUE, parentNode.stat.getCversion());
+
+        try {
+            zk.create("/parent/child-", null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
+            fail("expect node exists");
+        } catch (KeeperException ex) {
+            assertEquals(KeeperException.Code.NODEEXISTS, ex.code());
+        }
+
+        try {
+            zk.create("/parent/child-", null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
+            fail("expect node exists");
+        } catch (KeeperException ex) {
+            assertEquals(KeeperException.Code.NODEEXISTS, ex.code());
+        }
     }
 
     @Test
