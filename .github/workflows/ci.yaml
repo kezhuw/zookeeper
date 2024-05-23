@@ -77,9 +77,15 @@ jobs:
     - name: Show the first log message
       run: git log -n1
     - name: Install C Dependencies
+      if: ${{ !startsWith(matrix.profile.runner, 'macos') }}
       run: |
         sudo apt update
         sudo apt install -y libcppunit-dev libsasl2-dev
+    - name: Install C Dependencies ARM64
+      if: ${{ startsWith(matrix.profile.runner, 'macos') }}
+      run: |
+        brew update
+        brew install cppunit cyrus-sasl
     - name: Build with Maven (${{ matrix.profile.name }})
       run: mvn -B -V -e -ntp "-Dstyle.color=always" ${{ matrix.profile.args }}
       env:
