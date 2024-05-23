@@ -85,7 +85,7 @@ jobs:
       if: ${{ startsWith(matrix.profile.runner, 'macos') }}
       run: |
         brew update
-        brew install cppunit cyrus-sasl autoconf
+        brew install cppunit cyrus-sasl autoconf automake
     - name: Build with Maven (${{ matrix.profile.name }})
       run: mvn -B -V -e -ntp "-Dstyle.color=always" ${{ matrix.profile.args }}
       env:
