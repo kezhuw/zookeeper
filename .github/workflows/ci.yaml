@@ -35,18 +35,30 @@ jobs:
           - name: 'full-build-jdk8'
             jdk: 8
             args: '-Pfull-build apache-rat:check verify -DskipTests spotbugs:check checkstyle:check'
+            runner: ubuntu-latest
           - name: 'full-build-jdk11'
             jdk: 11
             args: '-Pfull-build apache-rat:check verify -DskipTests spotbugs:check checkstyle:check'
+            runner: ubuntu-latest
           - name: 'full-build-java-tests'
             jdk: 11
             args: '-Pfull-build verify -Dsurefire-forkcount=1 -DskipCppUnit -Dsurefire.rerunFailingTestsCount=5'
+            runner: ubuntu-latest
+          - name: 'full-build-java-tests arm64'
+            jdk: 11
+            args: '-Pfull-build verify -Dsurefire-forkcount=1 -DskipCppUnit -Dsurefire.rerunFailingTestsCount=5'
+            runner: macos-latest
           - name: 'full-build-cppunit-tests'
             jdk: 11
             args: '-Pfull-build verify -Dtest=_ -DfailIfNoTests=false'
+            runner: ubuntu-latest
+          - name: 'full-build-cppunit-tests arm64'
+            jdk: 11
+            args: '-Pfull-build verify -Dtest=_ -DfailIfNoTests=false'
+            runner: macos-latest
       fail-fast: false
     timeout-minutes: 360
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.profile.runner }}
     steps:
     - uses: actions/checkout@v3
     - name: Set up JDK ${{ matrix.profile.jdk }}
