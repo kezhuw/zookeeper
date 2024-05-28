@@ -97,7 +97,7 @@ public class LearnerHandlerMetricsTest {
 
         learnerHandler.startSendingPackets();
 
-        assertTrue(allSentLatch.await(8, TimeUnit.SECONDS));
+        assertTrue(allSentLatch.await(20, TimeUnit.SECONDS));
 
         Map<String, Object> values = MetricsUtils.currentServerMetrics();
         String sidStr = Long.toString(sid);

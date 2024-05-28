@@ -125,19 +125,23 @@ public class ZKTestCase {
     }
 
     public static <T> void waitForMetric(String metricKey, Matcher<T> matcher, int timeoutInSeconds) throws InterruptedException {
-        String errorMessage = String.format("metric \"%s\" failed to match after %d seconds",
-            metricKey, timeoutInSeconds);
-        waitFor(errorMessage, () -> {
+        final Instant deadline = Instant.now().plusSeconds(timeoutInSeconds);
+        while (true) {
             @SuppressWarnings("unchecked")
             T actual = (T) MetricsUtils.currentServerMetrics().get(metricKey);
-            if (!matcher.matches(actual)) {
-                Description description = new StringDescription();
-                matcher.describeMismatch(actual, description);
-                LOG.info("match failed for metric {}: {}", metricKey, description);
-                return false;
+            if (matcher.matches(actual)) {
+                return;
             }
-            return true;
-        }, timeoutInSeconds);
+            Thread.sleep(100);
+            if (Instant.now().isBefore(deadline)) {
+                continue;
+            }
+            Description description = new StringDescription();
+            matcher.describeMismatch(actual, description);
+            String msg = String.format("metric \"%s\" failed to match after %d seconds: %s",
+                    metricKey, timeoutInSeconds, description);
+            fail(msg);
+        }
     }
 
     /**
