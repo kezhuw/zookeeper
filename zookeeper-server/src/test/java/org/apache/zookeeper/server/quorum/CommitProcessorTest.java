@@ -18,6 +18,7 @@
 
 package org.apache.zookeeper.server.quorum;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -205,7 +206,7 @@ public class CommitProcessorTest extends ZKTestCase {
         assertFalse(fail);
         assertTrue(processedReadRequests.get() > 0, "No read requests processed");
         // processedWriteRequests.get() == numClients since each client performs one write at the beginning (creates a znode)
-        assertTrue(processedWriteRequests.get() == numClients, "Write requests processed");
+        assertEquals(processedWriteRequests.get(), numClients, "Write requests processed");
     }
 
     @Test
@@ -231,7 +232,7 @@ public class CommitProcessorTest extends ZKTestCase {
         assertFalse(fail);
         assertTrue(processedReadRequests.get() > 0, "No read requests processed");
         // processedWriteRequests.get() == numClients since each client performs one write at the beginning (creates a znode)
-        assertTrue(processedWriteRequests.get() == numClients, "Write requests processed");
+        assertEquals(processedWriteRequests.get(), numClients, "Write requests processed");
     }
 
     @Test

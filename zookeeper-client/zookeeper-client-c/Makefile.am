@@ -132,11 +132,14 @@ endif
 check_PROGRAMS = zktest-st
 TESTS_ENVIRONMENT = ZKROOT=${srcdir}/../.. \
                     CLASSPATH=$$CLASSPATH:$$CLOVER_HOME/lib/clover*.jar
+if WANT_CPPUNIT
 nodist_zktest_st_SOURCES = $(TEST_SOURCES)
 zktest_st_LDADD = libzkst.la libhashtable.la $(CPPUNIT_LIBS) $(OPENSSL_LIB_LDFLAGS) $(SASL_LIB_LDFLAGS) -ldl
 zktest_st_CXXFLAGS = $(AM_CXXFLAGS) -DUSE_STATIC_LIB $(CPPUNIT_CFLAGS) $(SOLARIS_CPPFLAGS)
 zktest_st_LDFLAGS = -shared $(SYMBOL_WRAPPERS) $(SOLARIS_LIB_LDFLAGS)
+endif
 
+if WANT_CPPUNIT
 if WANT_SYNCAPI
   check_PROGRAMS += zktest-mt
   nodist_zktest_mt_SOURCES = $(TEST_SOURCES) tests/PthreadMocks.cc
@@ -150,8 +153,13 @@ else
 endif
   zktest_mt_LDFLAGS = -shared $(SYMBOL_WRAPPERS_MT) $(SOLARIS_LIB_LDFLAGS)
 endif
+endif
 
+# Currently, tests rely on GNU linker option `--wrap mocked_function` to intercept mocked function.
+# But macOS does not support such option, so skip it for now.
+if WANT_CPPUNIT
 TESTS = $(check_PROGRAMS)
+endif
 
 clean-local: clean-check
 	$(RM) $(DX_CLEANFILES)

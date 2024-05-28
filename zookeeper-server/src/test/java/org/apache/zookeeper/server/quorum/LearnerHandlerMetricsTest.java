@@ -21,6 +21,7 @@ package org.apache.zookeeper.server.quorum;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.number.OrderingComparison.greaterThan;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
@@ -96,7 +97,7 @@ public class LearnerHandlerMetricsTest {
 
         learnerHandler.startSendingPackets();
 
-        allSentLatch.await(8, TimeUnit.SECONDS);
+        assertTrue(allSentLatch.await(8, TimeUnit.SECONDS));
 
         Map<String, Object> values = MetricsUtils.currentServerMetrics();
         String sidStr = Long.toString(sid);

@@ -148,8 +148,10 @@ public class ClientSSLTest extends QuorumPeerTestBase {
     @ParameterizedTest(name = "sslProvider={0}, fipsEnabled={1}, hostnameVerification={2}")
     @MethodSource("positiveTestData")
     public void testClientServerSSL_positive(SslProvider sslProvider, String fipsEnabled, String hostnameVerification) throws Exception {
-        //Skipping this test for s390x arch as netty-tc-native is not supported
+        //Skipping this test for s390x and aarch64(a.k.a. arm64) arch as netty-tc-native is not supported
         assumeFalse(System.getProperty("os.arch").contains("s390x"), " Skipping for s390x arch as netty-tcnative is not yet supported.");
+        assumeFalse(System.getProperty("os.arch").contains("aarch64"), " Skipping for aarch64 arch as netty-tcnative is not yet supported.");
+
         // Arrange
         System.setProperty(clientX509Util.getSslProviderProperty(), sslProvider.toString());
         System.setProperty(clientX509Util.getFipsModeProperty(), fipsEnabled);

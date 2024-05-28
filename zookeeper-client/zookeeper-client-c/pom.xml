@@ -51,7 +51,7 @@
               <workingDirectory>${project.basedir}</workingDirectory>
               <executable>autoreconf</executable>
               <environmentVariables>
-                <ACLOCAL>aclocal -I /usr/share/aclocal</ACLOCAL>
+                <ACLOCAL>aclocal -I /usr/local/share/aclocal</ACLOCAL>
               </environmentVariables>
               <arguments>
                 <argument>-if</argument>

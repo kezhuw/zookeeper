@@ -6,6 +6,8 @@ AC_PREREQ(2.59)
 AC_INIT([zookeeper C client],3.10.0,[user@zookeeper.apache.org],[zookeeper])
 AC_CONFIG_SRCDIR([src/zookeeper.c])
 
+AC_CANONICAL_HOST
+
 # Save initial CFLAGS and CXXFLAGS values before AC_PROG_CC and AC_PROG_CXX
 init_cflags="$CFLAGS"
 init_cxxflags="$CXXFLAGS"
@@ -28,15 +30,28 @@ AC_CONFIG_HEADER([config.h])
 
 # Checks for programs.
 AC_ARG_WITH(cppunit,
-        [  --without-cppunit       do not use CPPUNIT])
+        [  --without-cppunit       do not use CPPUNIT],[],[
+  case "$host_os" in
+      *darwin*)
+          AC_MSG_WARN([CPPUNIT macos])
+          with_cppunit=no
+          ;;
+      *)
+          AC_MSG_WARN([CPPUNIT nnnnnnno])
+          ;;
+  esac ])
 
-if test "$with_cppunit" = "no" ; then
+if test "x$with_cppunit" = "xno" ; then
+   AC_MSG_WARN([CPPUNIT no])
    CPPUNIT_PATH="No_CPPUNIT"
    CPPUNIT_INCLUDE=
    CPPUNIT_LIBS=
 else
+   AC_MSG_WARN([CPPUNIT yes])
    CHECK_CPPUNIT(1.10.2)
 fi
+
+AM_CONDITIONAL([WANT_CPPUNIT],[test "x$with_cppunit" != xno])
 
 dnl OpenSSL
 AC_ARG_WITH(openssl,
@@ -262,7 +277,6 @@ LIBS="$saved_LIBS"
 AC_CHECK_FUNCS([getcwd gethostbyname gethostname getlogin getpwuid_r gettimeofday getuid memmove memset poll socket strchr strdup strerror strtol])
 
 AC_CONFIG_FILES([Makefile])
-AC_CANONICAL_HOST
 AM_CONDITIONAL([SOLARIS],[
   case "$host_os" in
   *solaris*)
