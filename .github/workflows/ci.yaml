@@ -86,3 +86,13 @@ jobs:
         name: failsafe-reports-${{ matrix.profile.name }}
         path: ./**/target/failsafe-reports/
         if-no-files-found: ignore
+  typo-check:
+    name: Typo Check
+    # only run on pull requests because of security reasons
+    # we shouldn't trust external actions for builds within the repository
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check typos
+        uses: crate-ci/typos@v1.22.4
