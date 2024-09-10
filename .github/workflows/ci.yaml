@@ -90,7 +90,7 @@ jobs:
     name: Typo Check
     # only run on pull requests because of security reasons
     # we shouldn't trust external actions for builds within the repository
-    if: ${{ github.event_name == 'pull_request' }}
+    # if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

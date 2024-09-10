@@ -70,7 +70,7 @@ public class PrometheusHttpsMetricsProviderTest extends PrometheusMetricsTestBas
     }
 
     @Test
-    void testHttpResponse() throws Exception {
+    void testHttpResponce() throws Exception {
         Properties configuration = new Properties();
         configuration.setProperty("httpPort", String.valueOf(httpPort));
         initializeProviderWithCustomConfig(configuration);
@@ -88,7 +88,7 @@ public class PrometheusHttpsMetricsProviderTest extends PrometheusMetricsTestBas
     }
 
     @Test
-    void testHttpAndHttpsResponse() throws Exception {
+    void testHttpAndHttpsResponce() throws Exception {
         Properties configuration = new Properties();
         configuration.setProperty("httpsPort", String.valueOf(httpsPort));
         configuration.setProperty("httpPort", String.valueOf(httpPort));
