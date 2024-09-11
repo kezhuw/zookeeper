@@ -209,12 +209,10 @@ start|startClean|startRequireSASLAuth|startCleanReadOnly)
 
 
     # ===== wait for the server to start
-    if [ "x$1" == "xstartRequireSASLAuth" ]; then
+    if [ "x$1" == "xstartRequireSASLAuth" ] || [ "x$1" == "xstartCleanReadOnly" ]
+    then
        # ===== in these cases we can not connect simply with the java client, so we are just waiting...
        sleep 4
-       success=true
-    elif [ "x$1" == "xstartCleanReadOnly" ]; then
-       sleep 120
        success=true
     else
         # ===== wait max 120 seconds for server to be ready to server clients (this handles testing on slow hosts)
