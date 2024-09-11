@@ -70,6 +70,7 @@ jobs:
         sudo apt install -y libcppunit-dev libsasl2-dev
     - name: Build with Maven (${{ matrix.profile.name }})
       run: mvn -B -V -e -ntp "-Dstyle.color=always" ${{ matrix.profile.args }}
+      timeout-minutes: 8
       env:
         MAVEN_OPTS: -Djansi.force=true
     - name: Upload unit test results
@@ -87,8 +88,7 @@ jobs:
         path: ./**/target/failsafe-reports/
         if-no-files-found: ignore
     - name: Upload cppunit test logs
-      if: ${{ always() }}
-    # if: ${{ failure() }}
+      if: ${{ failure() || cancelled() }}
       uses: actions/upload-artifact@v3
       with:
         name: cppunit-logs-${{ matrix.profile.name }}
