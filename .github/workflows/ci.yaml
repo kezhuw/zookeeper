@@ -87,6 +87,7 @@ jobs:
         path: ./**/target/failsafe-reports/
         if-no-files-found: ignore
     - name: Upload cppunit test logs
+      if: ${{ always() }}
     # if: ${{ failure() }}
       uses: actions/upload-artifact@v3
       with:
