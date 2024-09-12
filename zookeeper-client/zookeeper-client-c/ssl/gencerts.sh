@@ -34,6 +34,8 @@ FQDN=`hostname -f`
 FQDN=${1:-$FQDN}
 FQDN=${FQDN:-"zookeeper.apache.org"}
 
+echo "FQDN: $FQDN"
+
 # Generate the root key
 openssl genrsa -out rootkey.pem 2048
 
