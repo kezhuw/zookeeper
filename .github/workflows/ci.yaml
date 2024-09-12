@@ -97,6 +97,15 @@ jobs:
     - name: Cat logs from TestReadOnlyClient.cc
       if: ${{ always() }}
       run: cat /home/runner/work/zookeeper/zookeeper/zookeeper-client/zookeeper-client-c/target/c/TEST-Zookeeper_readOnly-mt.txt
+    - name: List cppunit certs
+      if: ${{ always() }}
+      run: ls /tmp/certs
+    - name: Cat gencerts stdout
+      if: ${{ always() }}
+      run: cat /tmp/certs/gencerts.stdout
+    - name: Cat gencerts stderr
+      if: ${{ always() }}
+      run: cat /tmp/certs/gencerts.stderr
   typo-check:
     name: Typo Check
     # only run on pull requests because of security reasons
