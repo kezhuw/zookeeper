@@ -183,7 +183,7 @@ start|startClean|startRequireSASLAuth|startCleanReadOnly)
     mkdir -p "${certs_dir}"
     cp ${tests_dir}/../ssl/gencerts.sh "${certs_dir}/"  > /dev/null
     cd ${certs_dir} > /dev/null
-    ./gencerts.sh > ./gencerts.stdout 2> ./gencerts.stderr
+    ./gencerts.sh tests.zookeeper.apache.org > ./gencerts.stdout 2> ./gencerts.stderr
     cd - > /dev/null
 
 
