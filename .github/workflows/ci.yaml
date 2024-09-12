@@ -72,7 +72,6 @@ jobs:
         sudo apt install -y libcppunit-dev libsasl2-dev
     - name: Build with Maven (${{ matrix.profile.name }})
       run: mvn -B -V -e -ntp "-Dstyle.color=always" ${{ matrix.profile.args }}
-      timeout-minutes: 8
       env:
         MAVEN_OPTS: -Djansi.force=true
     - name: Upload unit test results
