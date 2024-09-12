@@ -68,6 +68,8 @@ jobs:
       run: |
         sudo apt update
         sudo apt install -y libcppunit-dev libsasl2-dev
+    - name: Echo hostname
+      run: echo `hostname -f`
     - name: Build with Maven (${{ matrix.profile.name }})
       run: mvn -B -V -e -ntp "-Dstyle.color=always" ${{ matrix.profile.args }}
       timeout-minutes: 8
