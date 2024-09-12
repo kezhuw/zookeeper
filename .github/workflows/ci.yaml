@@ -94,6 +94,9 @@ jobs:
         name: cppunit-logs-${{ matrix.profile.name }}
         path: ./zookeeper-client/zookeeper-client-c/target/c/TEST-*.txt
         if-no-files-found: ignore
+    - name: Cat logs from TestReadOnlyClient.cc
+      if: ${{ always() }}
+      run: cat /home/runner/work/zookeeper/zookeeper/zookeeper-client/zookeeper-client-c/target/c/TEST-Zookeeper_readOnly-mt.txt
   typo-check:
     name: Typo Check
     # only run on pull requests because of security reasons
