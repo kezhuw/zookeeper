@@ -48,6 +48,8 @@ jobs:
     timeout-minutes: 360
     runs-on: ubuntu-latest
     steps:
+    - name: Echo hostname
+      run: echo `hostname -f`
     - uses: actions/checkout@v3
     - name: Set up JDK ${{ matrix.profile.jdk }}
       uses: actions/setup-java@v3
@@ -68,8 +70,6 @@ jobs:
       run: |
         sudo apt update
         sudo apt install -y libcppunit-dev libsasl2-dev
-    - name: Echo hostname
-      run: echo `hostname -f`
     - name: Build with Maven (${{ matrix.profile.name }})
       run: mvn -B -V -e -ntp "-Dstyle.color=always" ${{ matrix.profile.args }}
       timeout-minutes: 8
