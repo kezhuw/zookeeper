@@ -613,7 +613,7 @@ public class Learner {
             zk.getZKDatabase().initConfigInZKDatabase(self.getQuorumVerifier());
             zk.createSessionTracker();
 
-            long lastQueued = 0;
+            long lastQueued = zk.getLastProcessedZxid();
 
             // in Zab V1.0 (ZK 3.4+) we might take a snapshot when we get the NEWLEADER message, but in pre V1.0
             // we take the snapshot on the UPDATE message, since Zab V1.0 also gets the UPDATE (after the NEWLEADER)
