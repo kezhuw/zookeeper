@@ -550,7 +550,7 @@ public abstract class X509Util implements Closeable, AutoCloseable {
             PKIXBuilderParameters pbParams = new PKIXBuilderParameters(ts, new X509CertSelector());
             if (crlEnabled || ocspEnabled) {
                 pbParams.setRevocationEnabled(true);
-                System.setProperty("com.sun.net.ssl.checkRevocation", "true");
+                System.setProperty("com.sun.net.ssl.checkRevocation", "false");
                 System.setProperty("com.sun.security.enableCRLDP", "true");
                 if (ocspEnabled) {
                     Security.setProperty("ocsp.enable", "true");
