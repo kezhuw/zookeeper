@@ -23,9 +23,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.zookeeper.AsyncCallback.MultiCallback;
@@ -40,7 +38,6 @@ import org.slf4j.LoggerFactory;
 public class ZKUtil {
 
     private static final Logger LOG = LoggerFactory.getLogger(ZKUtil.class);
-    private static final Map<Integer, String> permCache = new ConcurrentHashMap<>();
     /**
      * Recursively delete the node with the given path.
      * <p>
@@ -273,38 +270,10 @@ public class ZKUtil {
      * @return string representation of permissions
      */
     public static String getPermString(int perms) {
-        return permCache.computeIfAbsent(perms, k -> constructPermString(k));
-    }
-
-    private static String constructPermString(int perms) {
-        StringBuilder p = new StringBuilder();
-        if ((perms & ZooDefs.Perms.CREATE) != 0) {
-            p.append('c');
-        }
-        if ((perms & ZooDefs.Perms.DELETE) != 0) {
-            p.append('d');
-        }
-        if ((perms & ZooDefs.Perms.READ) != 0) {
-            p.append('r');
-        }
-        if ((perms & ZooDefs.Perms.WRITE) != 0) {
-            p.append('w');
-        }
-        if ((perms & ZooDefs.Perms.ADMIN) != 0) {
-            p.append('a');
-        }
-        return p.toString();
+        return ZKCommonUtil.getPermString(perms);
     }
 
     public static String aclToString(List<ACL> acls) {
-        StringBuilder sb = new StringBuilder();
-        for (ACL acl : acls) {
-            sb.append(acl.getId().getScheme());
-            sb.append(":");
-            sb.append(acl.getId().getId());
-            sb.append(":");
-            sb.append(getPermString(acl.getPerms()));
-        }
-        return sb.toString();
+        return ZKCommonUtil.aclToString(acls);
     }
 }
