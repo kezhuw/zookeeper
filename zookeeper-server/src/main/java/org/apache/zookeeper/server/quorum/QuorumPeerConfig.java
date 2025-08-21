@@ -42,7 +42,6 @@ import org.apache.zookeeper.common.AtomicFileWritingIdiom;
 import org.apache.zookeeper.common.AtomicFileWritingIdiom.OutputStreamStatement;
 import org.apache.zookeeper.common.AtomicFileWritingIdiom.WriterStatement;
 import org.apache.zookeeper.common.ClientX509Util;
-import org.apache.zookeeper.common.ConfigException;
 import org.apache.zookeeper.common.PathUtils;
 import org.apache.zookeeper.common.StringUtils;
 import org.apache.zookeeper.common.Time;

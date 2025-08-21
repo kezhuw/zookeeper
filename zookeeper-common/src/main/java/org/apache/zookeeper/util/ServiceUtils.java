@@ -20,6 +20,7 @@ package org.apache.zookeeper.util;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Objects;
 import java.util.function.Consumer;
+import org.apache.zookeeper.server.ExitCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,6 +79,7 @@ public abstract class ServiceUtils {
      * Force shutdown of the JVM using System.exit.
      *
      * @param code the exit code
+     * @see ExitCode
      */
     public static void requestSystemExit(int code) {
         systemExitProcedure.accept(code);
