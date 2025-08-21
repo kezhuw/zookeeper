@@ -19,6 +19,8 @@
 package org.apache.zookeeper;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.apache.zookeeper.server.ExitCode;
+import org.apache.zookeeper.util.ServiceUtils;
 
 public class Version implements org.apache.zookeeper.version.Info {
 
@@ -59,7 +61,7 @@ public class Version implements org.apache.zookeeper.version.Info {
         System.out.print("Usage:\tjava -cp ... org.apache.zookeeper.Version "
                          + "[--full | --short | --revision],\n\tPrints --full version "
                          + "info if no arg specified.");
-        System.exit(1);
+        ServiceUtils.requestSystemExit(ExitCode.UNEXPECTED_ERROR.getValue());
     }
 
     /**
@@ -79,7 +81,7 @@ public class Version implements org.apache.zookeeper.version.Info {
         }
         if (args.length == 0 || (args.length == 1 && args[0].equals("--full"))) {
             System.out.println(getFullVersion());
-            return;
+            ServiceUtils.requestSystemExit(ExitCode.EXECUTION_FINISHED.getValue());
         }
         if (args[0].equals("--short")) {
             System.out.println(getVersion());
@@ -88,6 +90,7 @@ public class Version implements org.apache.zookeeper.version.Info {
         } else {
             printUsage();
         }
+        ServiceUtils.requestSystemExit(ExitCode.EXECUTION_FINISHED.getValue());
     }
 
 }

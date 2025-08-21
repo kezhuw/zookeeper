@@ -31,7 +31,6 @@ import java.util.Set;
 import org.apache.jute.BinaryInputArchive;
 import org.apache.jute.InputArchive;
 import org.apache.yetus.audience.InterfaceAudience;
-import org.apache.zookeeper.ZKUtil;
 import org.apache.zookeeper.data.StatPersisted;
 import org.apache.zookeeper.server.persistence.FileSnap;
 import org.apache.zookeeper.server.persistence.SnapStream;
@@ -77,7 +76,7 @@ public class SnapshotFormatter {
             return;
         }
 
-        String error = ZKUtil.validateFileInput(snapshotFile);
+        String error = validateFileInput(snapshotFile);
         if (null != error) {
             System.err.println(error);
             ServiceUtils.requestSystemExit(ExitCode.INVALID_INVOCATION.getValue());
@@ -89,6 +88,24 @@ public class SnapshotFormatter {
         }
 
         new SnapshotFormatter().run(snapshotFile, dumpData, dumpJson);
+    }
+
+    /**
+     * @param filePath the file path to be validated
+     * @return Returns null if valid otherwise error message
+     */
+    public static String validateFileInput(String filePath) {
+        File file = new File(filePath);
+        if (!file.exists()) {
+            return "File '" + file.getAbsolutePath() + "' does not exist.";
+        }
+        if (!file.canRead()) {
+            return "Read permission is denied on the file '" + file.getAbsolutePath() + "'";
+        }
+        if (file.isDirectory()) {
+            return "'" + file.getAbsolutePath() + "' is a directory. it must be a file.";
+        }
+        return null;
     }
 
     public void run(String snapshotFileName, boolean dumpData, boolean dumpJson) throws IOException {
