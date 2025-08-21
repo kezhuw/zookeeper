@@ -40,7 +40,6 @@ import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.io.FileUtils;
 import org.apache.zookeeper.common.Time;
-import org.apache.zookeeper.server.ExitCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -170,7 +169,7 @@ public abstract class Shell {
         if (lastTime + interval > Time.currentElapsedTime()) {
             return;
         }
-        exitCode = ExitCode.EXECUTION_FINISHED.getValue(); // reset for next run
+        exitCode = 0; // reset for next run
         runCommand();
     }
 
@@ -239,7 +238,7 @@ public abstract class Shell {
             completed.set(true);
             //the timeout thread handling
             //taken care in finally block
-            if (exitCode != ExitCode.EXECUTION_FINISHED.getValue()) {
+            if (exitCode != 0) {
                 throw new ExitCodeException(exitCode, errMsg.toString());
             }
         } catch (InterruptedException ie) {
